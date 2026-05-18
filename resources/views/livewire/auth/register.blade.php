@@ -32,15 +32,39 @@
 
             <!-- Class selection moved to post-registration modal -->
             <!-- Password -->
-            <flux:input
-                name="password"
-                :label="__('Password')"
-                type="password"
-                required
-                autocomplete="new-password"
-                :placeholder="__('Password')"
-                viewable
-            />
+            <div x-data="{ password: '' }">
+                <flux:input
+                    name="password"
+                    :label="__('Password')"
+                    type="password"
+                    required
+                    autocomplete="new-password"
+                    :placeholder="__('Password')"
+                    viewable
+                    x-model="password"
+                />
+
+                <div class="mt-3 text-sm space-y-2">
+                    <p class="font-medium text-zinc-700 dark:text-zinc-300">{{ __('Password requirements:') }}</p>
+                    <ul class="space-y-1">
+                        <li class="flex items-center gap-2" :class="password.length >= 12 ? 'text-green-600 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'">
+                            <svg x-show="password.length >= 12" class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                            <svg x-show="password.length < 12" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /></svg>
+                            <span>{{ __('Minimum 12 characters') }}</span>
+                        </li>
+                        <li class="flex items-center gap-2" :class="(/[A-Z]/.test(password) && /[a-z]/.test(password)) ? 'text-green-600 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'">
+                            <svg x-show="/[A-Z]/.test(password) && /[a-z]/.test(password)" class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                            <svg x-show="!/[A-Z]/.test(password) || !/[a-z]/.test(password)" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /></svg>
+                            <span>{{ __('At least one uppercase and lowercase letter') }}</span>
+                        </li>
+                        <li class="flex items-center gap-2" :class="/[^A-Za-z0-9]/.test(password) ? 'text-green-600 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400'">
+                            <svg x-show="/[^A-Za-z0-9]/.test(password)" class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
+                            <svg x-show="!/[^A-Za-z0-9]/.test(password)" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" /></svg>
+                            <span>{{ __('At least one symbol') }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
 
             <!-- Confirm Password -->
             <flux:input

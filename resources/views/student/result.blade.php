@@ -84,3 +84,11 @@
 
 </div>
 @endsection
+
+@if(session('clear_quiz_storage_key'))
+    @push('scripts')
+        <script>
+            localStorage.removeItem(@json(session('clear_quiz_storage_key')));
+        </script>
+    @endpush
+@endif
