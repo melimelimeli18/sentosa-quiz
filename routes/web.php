@@ -20,6 +20,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
     Route::get('/quiz/{quiz}', QuizRunner::class)->name('quiz.take');
+    Route::post('/quiz/{quiz}/submit', [StudentController::class, 'submitQuiz'])->name('quiz.submit');
     Route::get('/quiz/{attempt}/result', [StudentController::class, 'result'])->name('quiz.result');
     Route::get('/quiz/{attempt}/stats', [StudentController::class, 'stats'])->name('quiz.stats');
 });

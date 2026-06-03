@@ -4,25 +4,32 @@ namespace App\Livewire;
 
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
-use App\Models\StudentAnswer;
-use App\Services\GradingService;
 use Illuminate\Support\Collection;
 use Livewire\Component;
 
 class QuizRunner extends Component
 {
     public QuizAttempt $attempt;
+
     public Quiz $quiz;
+
     public Collection $questions;
-    public int $currentIndex = 0;
+
     public array $answers = [];
-    public bool $isSubmitted = false;
+
     public ?int $remainingSeconds = null;
+
+    public ?string $startedAtIso = null;
 
     public function mount(Quiz $quiz): void
     {
         // Prevent students without a class or access
         abort_unless(auth()->check(), 403);
+        abort_unless(
+            $quiz->is_published
+            && $quiz->classes()->where('class_id', auth()->user()->class_id)->exists(),
+            403
+        );
 
         // Prevent re-taking if already completed
         $completed = QuizAttempt::where('quiz_id', $quiz->id)
@@ -32,6 +39,7 @@ class QuizRunner extends Component
 
         if ($completed) {
             $this->redirect(route('student.quiz.result', $completed));
+
             return;
         }
 
@@ -39,18 +47,22 @@ class QuizRunner extends Component
         $existing = QuizAttempt::where('quiz_id', $quiz->id)
             ->where('student_id', auth()->id())
             ->where('is_completed', false)
+            ->with('answers')
             ->first();
 
         $this->attempt = $existing ?? QuizAttempt::create([
-            'quiz_id'    => $quiz->id,
+            'quiz_id' => $quiz->id,
             'student_id' => auth()->id(),
         ]);
 
-        $this->quiz      = $quiz;
-        $this->questions = $quiz->questions()->orderByPivot('order')->get();
+        $this->quiz = $quiz->load('subject');
+        $this->questions = $quiz->questions()
+            ->with(['options' => fn ($query) => $query->orderBy('label')])
+            ->orderByPivot('order')
+            ->get();
 
         // Pre-fill answers from database (resume support)
-        foreach ($this->attempt->answers as $answer) {
+        foreach ($this->attempt->answers()->get() as $answer) {
             $this->answers[$answer->question_id] = $answer->selected_option_id
                 ?? $answer->short_answer_text;
         }
@@ -60,75 +72,8 @@ class QuizRunner extends Component
             $elapsed = now()->diffInSeconds($this->attempt->started_at);
             $this->remainingSeconds = max(0, ($quiz->duration_minutes * 60) - $elapsed);
         }
-    }
 
-    // Called every 1s via wire:poll if timer is active
-    public function tickTimer(): void
-    {
-        if ($this->remainingSeconds <= 0) {
-            $this->autoSubmit();
-            return;
-        }
-        // Always recalculate from server timestamp (anti-drift)
-        $elapsed = now()->diffInSeconds($this->attempt->started_at);
-        $this->remainingSeconds = max(0, ($this->quiz->duration_minutes * 60) - $elapsed);
-    }
-
-    public function saveAnswer(int $questionId, mixed $value): void
-    {
-        $this->answers[$questionId] = $value;
-
-        $question = $this->questions->find($questionId);
-
-        $payload = ['answered_at' => now()];
-
-        if ($question && $question->type === 'mcq') {
-            $payload['selected_option_id'] = $value;
-            $payload['short_answer_text']  = null;
-        } else {
-            $payload['short_answer_text']  = $value;
-            $payload['selected_option_id'] = null;
-        }
-
-        StudentAnswer::updateOrCreate(
-            ['attempt_id' => $this->attempt->id, 'question_id' => $questionId],
-            $payload
-        );
-    }
-
-    public function next(): void
-    {
-        if ($this->currentIndex < $this->questions->count() - 1) {
-            $this->currentIndex++;
-        }
-    }
-
-    public function previous(): void
-    {
-        if ($this->currentIndex > 0) {
-            $this->currentIndex--;
-        }
-    }
-
-    public function jumpTo(int $index): void
-    {
-        $this->currentIndex = $index;
-    }
-
-    public function autoSubmit(): void
-    {
-        $this->submit();
-    }
-
-    public function submit(): void
-    {
-        if ($this->isSubmitted) {
-            return;
-        }
-
-        GradingService::gradeAttempt($this->attempt);
-        $this->isSubmitted = true;
-        $this->redirect(route('student.quiz.result', $this->attempt));
+        $this->startedAtIso = $this->attempt->started_at?->toIso8601String();
     }
 
     public function render()
