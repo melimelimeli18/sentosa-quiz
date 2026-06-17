@@ -1,10 +1,16 @@
 <?php
 
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\DemoController;
 use App\Livewire\QuizRunner;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
+
+Route::middleware('demo.enabled')->group(function () {
+    Route::get('/demo-login/teacher', [DemoController::class, 'loginAsTeacher'])->name('demo.teacher');
+    Route::get('/demo-login/student', [DemoController::class, 'loginAsStudent'])->name('demo.student');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {

@@ -10,6 +10,13 @@ class SchoolClass extends Model
     protected $table = 'classes';
     protected $guarded = [];
 
+    protected function casts(): array
+    {
+        return [
+            'is_demo' => 'boolean',
+        ];
+    }
+
     public function users(): HasMany
     {
         return $this->hasMany(User::class, 'class_id');

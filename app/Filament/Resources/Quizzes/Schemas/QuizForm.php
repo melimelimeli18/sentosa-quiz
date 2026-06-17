@@ -21,9 +21,13 @@ class QuizForm
                     ->required(),
                 Select::make('teacher_id')
                     ->label('Teacher')
-                    ->options(User::role(['admin', 'teacher'])->pluck('name', 'id'))
+                    ->options(fn () => auth()->check() && auth()->user()->is_demo
+                        ? [auth()->id() => auth()->user()->name]
+                        : User::role(['admin', 'teacher'])->where('is_demo', false)->pluck('name', 'id')
+                    )
                     ->searchable()
                     ->preload()
+                    ->default(fn () => auth()->id())
                     ->required(),
                 Select::make('type')
                     ->options([
@@ -52,7 +56,13 @@ class QuizForm
                     ->default(1),
                 Select::make('classes')
                     ->multiple()
-                    ->relationship('classes', 'name')
+                    ->relationship(
+                        name: 'classes',
+                        titleAttribute: 'name',
+                        modifyQueryUsing: fn ($query) => auth()->check() && auth()->user()->is_demo
+                            ? $query->where('is_demo', true)
+                            : $query->where('is_demo', false)
+                    )
                     ->preload()
             ]);
     }

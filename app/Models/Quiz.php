@@ -15,6 +15,14 @@ class Quiz extends Model
         'type' => 'mid_term',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'is_demo' => 'boolean',
+            'is_published' => 'boolean',
+        ];
+    }
+
     public function subject(): BelongsTo
     {
         return $this->belongsTo(Subject::class);

@@ -16,6 +16,7 @@ class QuizAttempt extends Model
             'started_at' => 'datetime',
             'submitted_at' => 'datetime',
             'is_completed' => 'boolean',
+            'is_demo' => 'boolean',
         ];
     }
 

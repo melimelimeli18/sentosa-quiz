@@ -19,11 +19,18 @@ class StudentController extends Controller
     {
         $user = auth()->user();
 
-        $quizzes = Quiz::whereHas('classes', fn ($q) => $q->where('class_id', $user->class_id))
+        $quizzesQuery = Quiz::whereHas('classes', fn ($q) => $q->where('class_id', $user->class_id))
             ->where('is_published', true)
-            ->whereDoesntHave('attempts', fn ($q) => $q->where('student_id', $user->id)->where('is_completed', true))
-            ->with('subject')
-            ->get();
+            ->whereDoesntHave('attempts', fn ($q) => $q->where('student_id', $user->id)->where('is_completed', true));
+
+        if ($user->is_demo) {
+            $quizzesQuery->where('is_demo', false)
+                         ->where('title', 'Demo Quiz - Sample Subject');
+        } else {
+            $quizzesQuery->where('is_demo', false);
+        }
+
+        $quizzes = $quizzesQuery->with('subject')->get();
 
         $completedAttempts = QuizAttempt::where('student_id', $user->id)
             ->where('is_completed', true)

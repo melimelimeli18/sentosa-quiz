@@ -30,7 +30,13 @@ class UserForm
                     ->columnSpanFull(),
                 DateTimePicker::make('two_factor_confirmed_at'),
                 Select::make('class_id')
-                    ->relationship('class', 'name'),
+                    ->relationship(
+                        name: 'class',
+                        titleAttribute: 'name',
+                        modifyQueryUsing: fn ($query) => auth()->check() && auth()->user()->is_demo
+                            ? $query->where('is_demo', true)
+                            : $query->where('is_demo', false)
+                    ),
             ]);
     }
 }

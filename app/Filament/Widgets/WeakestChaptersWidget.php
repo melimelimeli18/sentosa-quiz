@@ -24,6 +24,7 @@ class WeakestChaptersWidget extends BaseWidget
                     ->join('student_answers', 'questions.id', '=', 'student_answers.question_id')
                     ->join('quiz_attempts', 'quiz_attempts.id', '=', 'student_answers.attempt_id')
                     ->where('quiz_attempts.is_completed', true)
+                    ->where('quiz_attempts.is_demo', false)
                     ->groupBy('chapters.id', 'chapters.name')
                     ->select(
                         'chapters.id',
