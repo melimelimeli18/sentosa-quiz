@@ -1,4 +1,4 @@
-name: linter
+name: tests
 
 on:
   push:
@@ -14,37 +14,47 @@ on:
       - master
       - workos
 
-permissions:
-  contents: write
-
 jobs:
-  quality:
+  ci:
     runs-on: ubuntu-latest
     environment: Testing
+    strategy:
+      matrix:
+        php-version: ["8.4"]
+
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout code
+        uses: actions/checkout@v6
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
+          php-version: ${{ matrix.php-version }}
+          tools: composer:v2
+          coverage: xdebug
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Install Node Dependencies
+        run: npm i
 
       - name: Add Flux Credentials Loaded From ENV
         run: composer config http-basic.composer.fluxui.dev "${{ secrets.FLUX_USERNAME }}" "${{ secrets.FLUX_LICENSE_KEY }}"
 
       - name: Install Dependencies
-        run: |
-          composer install -q --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
-          npm install
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
-      - name: Run Pint
-        run: composer lint
+      - name: Copy Environment File
+        run: cp .env.example .env
 
-      # - name: Commit Changes
-      #   uses: stefanzweifel/git-auto-commit-action@v7
-      #   with:
-      #     commit_message: fix code style
-      #     commit_options: '--no-verify'
-      #     file_pattern: |
-      #       **/*
-      #       !.github/workflows/*
+      - name: Generate Application Key
+        run: php artisan key:generate
+
+      - name: Build Assets
+        run: npm run build
+
+      - name: Run Tests
+        run: ./vendor/bin/phpunit
