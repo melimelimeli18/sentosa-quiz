@@ -53,6 +53,7 @@ class QuizRunner extends Component
         $this->attempt = $existing ?? QuizAttempt::create([
             'quiz_id' => $quiz->id,
             'student_id' => auth()->id(),
+            'is_demo' => auth()->check() && auth()->user()->is_demo,
         ]);
 
         $this->quiz = $quiz->load('subject');

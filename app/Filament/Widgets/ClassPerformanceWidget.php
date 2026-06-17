@@ -23,6 +23,9 @@ class ClassPerformanceWidget extends BaseWidget
                     ->join('users', 'classes.id', '=', 'users.class_id')
                     ->join('quiz_attempts', 'users.id', '=', 'quiz_attempts.student_id')
                     ->where('quiz_attempts.is_completed', true)
+                    ->where('classes.is_demo', false)
+                    ->where('users.is_demo', false)
+                    ->where('quiz_attempts.is_demo', false)
                     ->groupBy('classes.id', 'classes.name')
                     ->select(
                         'classes.id',

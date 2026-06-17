@@ -10,9 +10,12 @@ Replaces manual, paper-based quiz administration with a centralized system for q
 [![Filament](https://img.shields.io/badge/Filament-v3-F59E0B?style=flat)](https://filamentphp.com)
 [![Livewire](https://img.shields.io/badge/Livewire-v3-4E56A6?style=flat&logo=livewire&logoColor=white)](https://livewire.laravel.com)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon-336791?style=flat&logo=postgresql&logoColor=white)](https://neon.tech)
+[![Redis](https://img.shields.io/badge/Redis-Upstash-DC382D?style=flat&logo=redis&logoColor=white)](https://upstash.com)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-[**Live Demo**](#) · [Report a Bug](#) · [Request a Feature](#)
+[**Live Demo**](#https://sentosa-quiz.free.laravel.cloud/)
+
+<!-- · [Report a Bug](#) · [Request a Feature](#) -->
 
 </div>
 
@@ -20,28 +23,85 @@ Replaces manual, paper-based quiz administration with a centralized system for q
 
 ## Live Demo
 
-The application is deployed and fully functional. Use the credentials below to explore each role.
+The application is deployed and fully functional. There are **two ways** to try it:
 
-| Role    | Email                      | Password   |
-| ------- | -------------------------- | ---------- |
-| Admin   | `admin@sentosaquiz.demo`   | `demo1234` |
-| Teacher | `teacher@sentosaquiz.demo` | `demo1234` |
-| Student | `student@sentosaquiz.demo` | `demo1234` |
+### One-click Demo (No Registration)
 
-> Demo data resets periodically. If something looks off, it will be back to a clean state shortly.
+Click a button on the landing page and you're instantly logged in as a fresh, isolated demo account.  
+No form, no password, no cleanup needed on your end.
 
-**Suggested demo flow:**
+| Button             | What you get                                                                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Try as Teacher** | Hits `/demo-login/teacher` → creates a scoped demo teacher account → lands on the Filament admin panel                          |
+| **Try as Student** | Hits `/demo-login/student` → creates a scoped demo student account → auto-joins the Demo Class → lands on the student dashboard |
 
-1. Log in as **Teacher** → create a quiz → tag questions to a chapter → generate a class join code
-2. Log in as **Student** → join the class with the code → take the quiz
-3. Check the **Student** dashboard for per-chapter performance breakdown
-4. Log in as **Admin** → view school-wide and per-class analytics
+> Demo accounts and their data are **auto-purged after 24 hours** (or immediately on logout) via a scheduled cleanup job. No persistent data accumulation.
+
+## Suggested Demo Flow
+
+### 🧑‍🏫 As Teacher (one-click or fixed credential)
+
+1. Click **Try as Teacher** on the landing page
+2. You land in the **Filament admin panel** → navigate to **Quizzes**
+3. Create a new quiz — give it a title and assign it to a subject
+4. In the question builder:
+    - **Add questions manually**, or
+    - **Import from Excel** using the prepared template — download it from the link below, fill it in, and upload
+5. Reorder questions with **drag-and-drop**
+6. Open the **Chapter Tagging modal** to tag questions to chapters (enables per-chapter analytics)
+7. Assign the quiz to the **Demo Class** using the class dropdown
+
+**📥 Excel Question Import Template**
+
+Download the mock template (pre-filled with sample questions) and upload it directly in the quiz builder:
+
+> 🔗 **[Download Excel Template (Google Drive mock)](https://docs.google.com/spreadsheets/d/1RPY7uI0dpkjXe5Fei5LLbmymt6-A42kc/edit?usp=sharing&ouid=108824727547272959236&rtpof=true&sd=true)**
+
+Or generate a fresh blank template from within the app:  
+**Quizzes → [your quiz] → Manage Questions → Download Template**
+
+The template columns are:
+
+| Column           | Description                              | Example                             |
+| ---------------- | ---------------------------------------- | ----------------------------------- |
+| `No`             | Row number (optional, ignored on import) | `1`                                 |
+| `Question`       | The question body                        | `What is the capital of Indonesia?` |
+| `Option A`       | Choice A                                 | `Jakarta`                           |
+| `Option B`       | Choice B                                 | `Bandung`                           |
+| `Option C`       | Choice C                                 | `Surabaya`                          |
+| `Option D`       | Choice D                                 | `Medan`                             |
+| `Correct Answer` | Must be exactly `A`, `B`, `C`, or `D`    | `A`                                 |
+
+> Rows with a blank `Question` or invalid `Correct Answer` are silently skipped on import.
+
+---
+
+### 🧑‍🎓 As Student (one-click or fixed credential)
+
+1. Click **Try as Student** on the landing page
+2. You land on the **student dashboard** — already enrolled in the Demo Class
+3. Open the assigned **Demo Quiz** and take it
+4. After submission, check your **Profile / Results** page:
+    - Per-quiz score
+    - **Chapter-level breakdown**: correct-percentage per chapter, naturally sorted, with "Uncategorized" pinned last, and best/weakest chapters highlighted
+
+---
+
+### 🛡️ As Admin (fixed credential only)
+
+1. Log in as `admin@sentosaquiz.demo` / `demo1234`
+2. Explore the **school-wide analytics dashboard**:
+    - Per-class and per-subject score averages
+    - Bottom-5 weakest chapters across the school
+3. Manage subjects, chapters, and users from the sidebar
+
+> Admin analytics exclude all demo activity (`is_demo = true` records are filtered out), so the numbers reflect only the fixed seeded school data.
 
 ---
 
 ## Preview
 
-> _Screenshot/GIF: Teacher creates a quiz → Student joins via class code → Student views chapter-based results._
+> _Screenshot/GIF: Teacher creates a quiz → imports from Excel → Student joins via demo flow → Student views chapter-based results._
 >
 > `![SentosaQuiz demo](./docs/demo.gif)`
 
@@ -50,12 +110,11 @@ The application is deployed and fully functional. Use the credentials below to e
 ## Table of Contents
 
 - [Problem & Context](#problem--context)
-- [Architecture Decisions](#architecture-decisions)
+- [Architecture](#architecture)
 - [Features by Role](#features-by-role)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
 - [Known Constraints (MVP Scope)](#known-constraints-mvp-scope)
-- [Roadmap](#roadmap)
 - [Local Setup](#local-setup)
 - [License](#license)
 
@@ -65,24 +124,26 @@ The application is deployed and fully functional. Use the credentials below to e
 
 SMA Sentosa previously ran quizzes manually — paper-based or scattered across spreadsheets, with no consistent way to track which topics students were struggling with at a granular level. SentosaQuiz centralizes this into a single platform with three distinct roles (Admin, Teacher, Student), structured quiz creation, class-based organization, and a chapter-level analysis layer that identifies each student's strongest and weakest topics per attempt — the foundation for a planned learning-evaluation feature based on wrong-answer patterns.
 
-## Architecture Decisions
+---
 
-These are the non-obvious decisions worth highlighting — what was chosen, and what it cost.
+## Architecture
 
-**1. PostgreSQL (Neon) instead of MySQL**
-Laravel's tooling and community examples are overwhelmingly MySQL-first, so this was a deliberate trade-off in exchange for Neon's serverless/branching workflow. It surfaced real compatibility issues that wouldn't exist on MySQL: Filament's `orderByPivot()` helper is MySQL-specific and had to be replaced with a manual `orderBy('quiz_questions.order')`; local development on Windows/Laragon required manually enabling the `pdo_pgsql` / `pgsql` PHP extensions; and Neon requires `sslmode=require` in the database config. None of this is exposed to the end user, but it's the kind of friction that doesn't show up in tutorials.
+| Layer                       | Technology                    | Notes                                     |
+| --------------------------- | ----------------------------- | ----------------------------------------- |
+| Backend                     | Laravel (PHP 8.3+)            | MVC, Eloquent ORM                         |
+| Admin Panel                 | Filament v3                   | Teacher & admin interfaces                |
+| Interactivity               | Livewire v3 + Alpine.js       | Quiz builder, chapter tagging             |
+| Auth backend                | Laravel Fortify               | Headless auth (login, register, reset)    |
+| Authorization               | Spatie Laravel Permission     | RBAC — Admin / Teacher / Student roles    |
+| Database                    | PostgreSQL on Neon            | Serverless, SSL required                  |
+| Caching / Sessions / Queues | Redis on Upstash              | Reduces Neon round-trips; session storage |
+| Spreadsheet I/O             | maatwebsite/excel             | Import questions + export template        |
+| Drag & Drop                 | SortableJS (Filament-bundled) | Question reordering                       |
+| Styling                     | Tailwind CSS v4               | Utility-first                             |
+| Build Tool                  | Vite                          | HMR in dev, bundled for prod              |
+| Dev Environment             | Windows + Laragon (PHP 8.x)   |                                           |
 
-**2. School-centric question storage instead of a global question bank**
-Questions belong to a single quiz rather than living in a shared, reusable bank. This simplifies ownership and avoids a more complex permissions model, at the cost of duplicating questions if a teacher wants to reuse one across quizzes. The trade-off is mitigated by a `QuestionCopyService` that handles copy-on-edit: editing a question that's referenced elsewhere creates a new copy instead of mutating shared state.
-
-**3. Two-step chapter tagging instead of tagging at question-creation time**
-Questions are created untagged, then assigned to a chapter afterward through a dedicated Livewire modal (pick a chapter → assign untagged questions to it). This decouples question writing from curriculum organization and keeps the modal's candidate list clean — already-tagged questions disappear from subsequent opens. This tagging step is what makes the chapter-level analytics layer possible; getting the data model right here was treated as foundational, not an afterthought.
-
-**4. Unified login with guard-based redirect instead of separate login pages per role**
-All roles authenticate through a single `/login` endpoint. Admins and teachers land on the Filament dashboard (gated via `authGuard('web')` alignment), while students are redirected to a separate `/student/dashboard`. This avoids the complexity of multiple auth flows while still giving each role a tailored experience.
-
-**5. A `type` field enforcing one quiz type per subject**
-A unique constraint on `(subject_id, type)` enforces that a subject can only have one quiz of a given type. It looks like a minor schema detail, but removing it silently breaks the two-quiz-per-subject rule — a reminder that some "small" fields are load-bearing.
+---
 
 ## Features by Role
 
@@ -92,38 +153,27 @@ A unique constraint on `(subject_id, type)` enforces that a subject can only hav
 - Per-class and per-subject score averages
 - Bottom-5 weakest chapters across the school
 - Full visibility into subjects, chapters, and user management
+- All analytics exclude `is_demo` records — real data only
 
 ### Teacher
 
 - Create and manage quizzes (multiple-choice questions)
 - Drag-and-drop question reordering (SortableJS + Livewire sync)
-- Import/export questions via Excel (`maatwebsite/excel`)
+- Import questions via Excel template (`maatwebsite/excel`)
+- Export a blank template directly from the quiz builder
 - Tag questions to chapters via a two-step assignment modal
-- Generate a 6-digit alphanumeric class join code for students
+- Assign quizzes to classes
 - View class-level and individual student performance
+- Demo teachers are scoped to their own session — they never see other demo teachers' quizzes
 
 ### Student
 
 - Self-registration (email-only for MVP)
-- Join a class using a teacher-issued join code (one class per student)
+- One-click demo login (no registration required)
+- Auto-join a class via the demo flow, or join with a teacher-issued code
 - Take assigned quizzes
 - View a personal profile with per-quiz stats
-- Chapter-level breakdown per attempt: correct-percentage by chapter, naturally sorted, with "Uncategorized" pinned last, highlighting best and weakest chapters
-
-## Tech Stack
-
-| Layer           | Technology                       |
-| --------------- | -------------------------------- |
-| Framework       | Laravel                          |
-| Admin Panel     | Filament v3                      |
-| Interactivity   | Livewire v3 + Alpine.js          |
-| Database        | PostgreSQL (hosted on Neon.tech) |
-| Authorization   | Spatie Laravel Permission        |
-| Spreadsheet I/O | maatwebsite/excel                |
-| Drag & Drop     | SortableJS (Filament-bundled)    |
-| Dev Environment | Windows + Laragon (PHP 8.x)      |
-
-No Vue.js or Axios — interactivity is handled entirely through Livewire and Alpine.
+- **Chapter-level breakdown per attempt**: correct-percentage by chapter, naturally sorted, with "Uncategorized" pinned last, highlighting best and weakest chapters
 
 ---
 
@@ -136,11 +186,20 @@ app/
 │       └── SubjectResource/
 │           └── RelationManagers/   # Chapter CRUD lives here
 ├── Livewire/                       # Quiz builder, chapter-tagging modal, etc.
+├── Imports/
+│   └── QuestionImport.php          # Excel → Question + McqOption rows
+├── Exports/
+│   └── QuestionTemplateExport.php  # Blank template with sample rows & bold header
 ├── Services/
 │   ├── QuestionCopyService.php     # Copy-on-edit for shared questions
 │   └── ChapterAnalysisService.php  # Per-chapter scoring & breakdown logic
 ├── Models/
-└── Http/Controllers/
+├── Console/
+│   └── Commands/
+│       └── DemoCleanup.php         # Artisan: demo:cleanup (runs hourly)
+└── Http/
+    └── Controllers/
+        └── DemoController.php      # /demo-login/teacher & /demo-login/student
 ```
 
 ---
@@ -152,15 +211,7 @@ These are deliberate trade-offs for MVP velocity, not oversights — documented 
 - **Relaxed validation on several fields.** Some fields (e.g. `questions.chapter_id`) are nullable with `nullOnDelete()` rather than strictly required, prioritizing working functionality over strict data integrity at this stage.
 - **Single class per student, enforced at the application layer.** This matches the school's actual structure (one class per student) but isn't yet enforced with a database-level constraint.
 - **Email-only student registration.** No school-ID verification or invite-gating yet — acceptable for MVP testing, but would need hardening before being opened to a full student body.
-
----
-
-## Roadmap
-
-- [ ] Finalize and ship the quiz creation overhaul (in-progress refinements to question card UI)
-- [ ] Expand the question bank / chapter-tagging workflow
-- [ ] **Learning evaluation feature** — surfacing recurring wrong-answer patterns per chapter over time, not just per attempt
-- [ ] Tighten MVP-era validation (see Known Constraints) as usage scales
+- **Demo teacher quizzes are not visible to demo students.** Demo students always see the fixed, pre-seeded demo quiz — teacher-created demo quizzes are preview-only for the teacher session that created them.
 
 ---
 
@@ -168,9 +219,10 @@ These are deliberate trade-offs for MVP velocity, not oversights — documented 
 
 ### Requirements
 
-- PHP 8.x
+- PHP 8.3+
 - Composer
-- PostgreSQL (or a Neon.tech account)
+- PostgreSQL (or a [Neon.tech](https://neon.tech) account)
+- Redis (or an [Upstash](https://upstash.com) account)
 - Node.js (for frontend asset compilation)
 
 ### Installation
@@ -188,7 +240,7 @@ php artisan key:generate
 
 ### Database Configuration
 
-Set your PostgreSQL credentials in `.env`:
+Set your PostgreSQL and Redis credentials in `.env`:
 
 ```env
 DB_CONNECTION=pgsql
@@ -197,6 +249,13 @@ DB_PORT=5432
 DB_DATABASE=<your-database>
 DB_USERNAME=<your-username>
 DB_PASSWORD=<your-password>
+
+REDIS_HOST=<your-upstash-host>
+REDIS_PASSWORD=<your-upstash-password>
+REDIS_PORT=6379
+
+# Demo mode (set true to enable /demo-login/* routes)
+DEMO_ENABLED=false
 ```
 
 If hosting on Neon.tech, SSL is required — add this to `config/database.php` under the `pgsql` connection:
@@ -205,10 +264,14 @@ If hosting on Neon.tech, SSL is required — add this to `config/database.php` u
 'sslmode' => 'require',
 ```
 
-Then run migrations and seed demo data:
+Then run migrations and seed:
 
 ```bash
+# Core schema + roles + admin user
 php artisan migrate --seed
+
+# Fixed demo class & demo quiz (run once after migrate; idempotent)
+php artisan db:seed --class=DemoSeeder
 ```
 
 ### Windows / Laragon Note
@@ -227,15 +290,15 @@ php artisan serve
 npm run dev
 ```
 
-Visit `http://localhost:8000` and log in with any of the [demo credentials](#live-demo) above, or your own seeded data.
+Visit `http://localhost:8000` and log in with any of the [demo credentials](#option-b--fixed-credentials) above, or your own seeded data.
 
 ### Useful Commands
 
 ```bash
-php artisan optimize:clear   # Clear all caches (config, route, view, etc.)
+php artisan optimize:clear      # Clear all caches (config, route, view, etc.)
+php artisan demo:cleanup        # Manually trigger demo data purge (normally runs hourly)
+php artisan schedule:work       # Run the scheduler locally (triggers demo:cleanup hourly)
 ```
-
----
 
 ## License
 

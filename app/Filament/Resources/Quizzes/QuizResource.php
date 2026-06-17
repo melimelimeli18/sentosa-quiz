@@ -20,6 +20,22 @@ class QuizResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+
+        if (auth()->check()) {
+            if (auth()->user()->is_demo) {
+                return $query->where('is_demo', true)
+                             ->where('teacher_id', auth()->id());
+            } else {
+                return $query->where('is_demo', false);
+            }
+        }
+
+        return $query;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return QuizForm::configure($schema);

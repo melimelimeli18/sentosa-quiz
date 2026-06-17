@@ -23,6 +23,8 @@ class SubjectPerformanceWidget extends BaseWidget
                     ->join('quizzes', 'subjects.id', '=', 'quizzes.subject_id')
                     ->join('quiz_attempts', 'quizzes.id', '=', 'quiz_attempts.quiz_id')
                     ->where('quiz_attempts.is_completed', true)
+                    ->where('quizzes.is_demo', false)
+                    ->where('quiz_attempts.is_demo', false)
                     ->groupBy('subjects.id', 'subjects.name')
                     ->select(
                         'subjects.id',

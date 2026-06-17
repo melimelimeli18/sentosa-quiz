@@ -33,6 +33,23 @@
                         Sign Up
                     </a>
                 @endif
+
+                @if (config('app.demo_enabled'))
+                    <div class="relative flex py-2 items-center">
+                        <div class="flex-grow border-t border-gray-200"></div>
+                        <span class="flex-shrink mx-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Demo</span>
+                        <div class="flex-grow border-t border-gray-200"></div>
+                    </div>
+
+                    <div class="flex flex-col gap-2">
+                        <a href="{{ route('demo.student') }}" class="w-full py-2.5 px-4 text-center bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors text-sm">
+                            Login as Student
+                        </a>
+                        <a href="{{ route('demo.teacher') }}" class="w-full py-2.5 px-4 text-center bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors text-sm">
+                            Login as Teacher
+                        </a>
+                    </div>
+                @endif
             </div>
         </main>
     </body>

@@ -24,6 +24,24 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->configureDefaults();
+
+        \Illuminate\Support\Facades\Event::listen(
+            \Illuminate\Auth\Events\Logout::class,
+            function (\Illuminate\Auth\Events\Logout $event) {
+                $user = $event->user;
+                if ($user && $user->is_demo) {
+                    \App\Models\QuizAttempt::where('student_id', $user->id)->delete();
+                    
+                    $demoQuizIds = \App\Models\Quiz::where('teacher_id', $user->id)->pluck('id');
+                    \Illuminate\Support\Facades\DB::table('quiz_class')->whereIn('quiz_id', $demoQuizIds)->delete();
+                    \App\Models\Quiz::where('teacher_id', $user->id)->delete();
+                    
+                    \App\Models\Question::where('created_by', $user->id)->delete();
+                    
+                    $user->delete();
+                }
+            }
+        );
     }
 
     /**
