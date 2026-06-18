@@ -123,6 +123,7 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    'demo_enabled' => env('DEMO_ENABLED', false),
+    //customize demo true or false
+    'demo_enabled' => env('DEMO_ENABLED', true),
 
 ];
