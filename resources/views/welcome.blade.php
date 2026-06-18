@@ -42,10 +42,11 @@
                     </div>
 
                     <div class="flex flex-col gap-2">
-                        <a href="{{ route('demo.student') }}" class="w-full py-2.5 px-4 text-center bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors text-sm">
+                        <a href="{{ route('demo.student') }}" class="w-full py-3 px-4 text-center bg-[#C50303] text-white hover:bg-[#a50202] rounded-lg font-bold transition-colors shadow-sm shadow-[#C50303]/20">
                             Login as Student
                         </a>
-                        <a href="{{ route('demo.teacher') }}" class="w-full py-2.5 px-4 text-center bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors text-sm">
+                    </a>
+                        <a href="{{ route('demo.teacher') }}" class="w-full py-3 px-4 text-center bg-[#C50303] text-white hover:bg-[#a50202] rounded-lg font-bold transition-colors shadow-sm shadow-[#C50303]/20">
                             Login as Teacher
                         </a>
                     </div>
