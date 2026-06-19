@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome')->name('home');
 
+Route::post('/register', [\Laravel\Fortify\Http\Controllers\RegisteredUserController::class, 'store'])->name('register.store');
+
 Route::middleware('demo.enabled')->group(function () {
     Route::get('/demo-login/teacher', [DemoController::class, 'loginAsTeacher'])->name('demo.teacher');
     Route::get('/demo-login/student', [DemoController::class, 'loginAsStudent'])->name('demo.student');
@@ -23,7 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 });
 
 // Student routes
-Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
+Route::middleware(['auth', 'verified', 'role:student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
     Route::get('/quiz/{quiz}', QuizRunner::class)->name('quiz.take');
     Route::post('/quiz/{quiz}/submit', [StudentController::class, 'submitQuiz'])->name('quiz.submit');
