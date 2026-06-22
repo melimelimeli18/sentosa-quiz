@@ -16,7 +16,7 @@ Route::middleware('demo.enabled')->group(function () {
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
-        if (auth()->user()->hasRole(['admin', 'teacher'])) {
+        if (auth()->user()->hasAnyRole(['admin', 'teacher'])) {
             return redirect('/admin');
         }
 
