@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // ponytail: skip CSRF check for Resend webhook endpoint
+        $middleware->validateCsrfTokens(except: [
+            'resend/*',
+        ]);
+
         $middleware->alias([
             'role'       => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,

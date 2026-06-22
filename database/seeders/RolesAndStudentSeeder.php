@@ -28,6 +28,7 @@ class RolesAndStudentSeeder extends Seeder
                 'name'     => 'Siswa Test',
                 'password' => bcrypt('password'),
                 'class_id' => $class->id,
+                'email_verified_at' => now(),
             ]
         );
         $student->syncRoles([$studentRole]);

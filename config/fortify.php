@@ -144,13 +144,12 @@ return [
     */
 
     'features' => [
-        Features::registration(),
         Features::resetPasswords(),
-        // Features::emailVerification(),
-        // Features::twoFactorAuthentication([
+        Features::emailVerification(),
+        Features::registration(),
+        // Features::twoFactorAuthentication([             // Disabled: not in scope
         //     'confirm' => true,
         //     'confirmPassword' => true,
-        //     // 'window' => 0
         // ]),
     ],
 

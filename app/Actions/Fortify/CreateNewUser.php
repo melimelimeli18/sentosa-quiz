@@ -30,6 +30,7 @@ class CreateNewUser implements CreatesNewUsers
             'password' => $input['password'],
         ]);
 
+        \Spatie\Permission\Models\Role::findOrCreate('student', 'web');
         $user->assignRole('student');
 
         return $user;

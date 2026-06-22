@@ -42,6 +42,7 @@ class DemoController extends Controller
         ]);
 
         $user->assignRole($role);
+        $user->markEmailAsVerified(); // demo users skip the verification flow
         return $user;
     }
 }

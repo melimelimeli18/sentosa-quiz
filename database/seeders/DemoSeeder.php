@@ -40,7 +40,8 @@ class DemoSeeder extends Seeder
             [
                 'name' => 'Guru Utama',
                 'password' => bcrypt('password123'),
-                'is_demo' => false
+                'is_demo' => false,
+                'email_verified_at' => now(),
             ]
         );
         $fixedTeacher->assignRole($teacherRole);

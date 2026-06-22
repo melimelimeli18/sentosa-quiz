@@ -15,6 +15,8 @@ class RegistrationTest extends TestCase
         parent::setUp();
 
         $this->skipUnlessFortifyHas(Features::registration());
+
+        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
     }
 
     public function test_registration_screen_can_be_rendered(): void
@@ -34,7 +36,7 @@ class RegistrationTest extends TestCase
         ]);
 
         $response->assertSessionHasNoErrors()
-            ->assertRedirect(route('dashboard', absolute: false));
+            ->assertRedirect(route('student.dashboard', absolute: false));
 
         $this->assertAuthenticated();
     }
