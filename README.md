@@ -1,5 +1,7 @@
 <div align="center">
 
+![](public/images/logo_2.webp)
+
 # SentosaQuiz
 
 **A multi-role quiz management platform built for SMA Sentosa Jakarta Barat**
@@ -101,9 +103,10 @@ The template columns are:
 
 ## Preview
 
-> _Screenshot/GIF: Teacher creates a quiz → imports from Excel → Student joins via demo flow → Student views chapter-based results._
->
-> `![SentosaQuiz demo](./docs/demo.gif)`
+<!-- TO DO
+> _Screenshot/GIF: Teacher creates a quiz → imports from Excel → Student joins via demo flow → Student views chapter-based results._ -->
+
+> ![](public\images\dribble-shot.webp)
 
 ---
 
@@ -130,18 +133,21 @@ SMA Sentosa previously ran quizzes manually — paper-based or scattered across 
 
 | Layer                       | Technology                    | Notes                                     |
 | --------------------------- | ----------------------------- | ----------------------------------------- |
-| Backend                     | Laravel (PHP 8.3+)            | MVC, Eloquent ORM                         |
+| Backend                     | Laravel (PHP 8.4.21+)         | MVC, Eloquent ORM                         |
 | Admin Panel                 | Filament v3                   | Teacher & admin interfaces                |
 | Interactivity               | Livewire v3 + Alpine.js       | Quiz builder, chapter tagging             |
+| Component Layer             | Livewire / Flux               | UI component library                      |
 | Auth backend                | Laravel Fortify               | Headless auth (login, register, reset)    |
 | Authorization               | Spatie Laravel Permission     | RBAC — Admin / Teacher / Student roles    |
 | Database                    | PostgreSQL on Neon            | Serverless, SSL required                  |
 | Caching / Sessions / Queues | Redis on Upstash              | Reduces Neon round-trips; session storage |
+| Email Service               | Resend                        | Password reset and email verification     |
 | Spreadsheet I/O             | maatwebsite/excel             | Import questions + export template        |
 | Drag & Drop                 | SortableJS (Filament-bundled) | Question reordering                       |
 | Styling                     | Tailwind CSS v4               | Utility-first                             |
 | Build Tool                  | Vite                          | HMR in dev, bundled for prod              |
-| Dev Environment             | Windows + Laragon (PHP 8.x)   |                                           |
+| Dev Environment             | Windows + Herd (PHP 8.4.21)   | Local development environment             |
+| Deployment                  | Laravel Cloud                 | Production deployment platform            |
 
 ---
 
@@ -219,7 +225,7 @@ These are deliberate trade-offs for MVP velocity, not oversights — documented 
 
 ### Requirements
 
-- PHP 8.3+
+- PHP 8.4.21+ (Laravel Herd recommended)
 - Composer
 - PostgreSQL (or a [Neon.tech](https://neon.tech) account)
 - Redis (or an [Upstash](https://upstash.com) account)
@@ -274,14 +280,9 @@ php artisan migrate --seed
 php artisan db:seed --class=DemoSeeder
 ```
 
-### Windows / Laragon Note
+### Windows / Laravel Herd Note
 
-PostgreSQL support isn't enabled by default on Laragon's bundled PHP. Enable the following in `php.ini`, then restart Laragon:
-
-```ini
-extension=pdo_pgsql
-extension=pgsql
-```
+Ensure that the PostgreSQL extension is enabled in your Herd PHP settings (via the Herd UI or configuration files), specifically enabling `pdo_pgsql` and `pgsql` to support connection to database services.
 
 ### Run
 
