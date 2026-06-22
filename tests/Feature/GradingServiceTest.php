@@ -25,7 +25,7 @@ class GradingServiceTest extends TestCase
     {
         parent::setUp();
 
-        $subject = Subject::create(['name' => 'Biologi', 'code' => 'BIO']);
+        $subject = Subject::create(['name' => 'Biologi']);
         $teacher = User::create([
             'name'     => 'Teacher',
             'email'    => 'teacher@test.com',
